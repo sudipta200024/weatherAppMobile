@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:weathermobileapp/Utils/colors.dart';
+
+import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -9,13 +13,35 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  late Timer _timer;
+
+  @override
+  @override
+  void initState() {
+    _timer = Timer(Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      }
+    });
+    super.initState();
+  }
+  @override
+  void dispose() {
+    _timer.cancel();
+
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).primaryColor,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 40),
@@ -26,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   "Discover The\nWeather In Your City",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.secondary,
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
@@ -46,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   "Get To Know The Weather\nAnd Forcast In Your City",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.secondary,
                     fontSize: 17,
                     fontWeight: FontWeight.w400,
                   ),
@@ -61,14 +87,22 @@ class _SplashScreenState extends State<SplashScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomeScreen()),
+                    );
+                  },
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15,horizontal: 50),
-                    child: Text("Get Started",style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),),
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                    child: Text(
+                      "Get Started",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ),
