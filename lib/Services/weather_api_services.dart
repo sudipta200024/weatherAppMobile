@@ -7,6 +7,7 @@ const String apiKey = "661efa7a9ace43668ce23417250311";
 final String _baseUrl = "http://api.weatherapi.com/v1";
 
 class WeatherApiServices {
+  //current+next 7 days forecast
   Future<Map<String, dynamic>> getHourlyForecast(String location) async {
     final url = Uri.parse(
       "$_baseUrl/forecast.json?key=$apiKey&q=$location&days=7",
@@ -18,13 +19,15 @@ class WeatherApiServices {
     final data = json.decode(res.body);
 
     if (data.containsKey(
-        'error')) { //containsKey is like a query searching for word error in map
+        'error')) {   //containsKey is like a query searching for word error in map
       throw Exception(data['error']['message'] ?? 'Invalid location');
     }
     return data;
   }
 
   //weather history of past 7 days
+
+
   Future<List<Map<String, dynamic>>> getLast7DaysForecast(String location) async {
     final List<Map<String, dynamic>> historyWeather = [];
     final today = DateTime.now();

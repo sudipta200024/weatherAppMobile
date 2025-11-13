@@ -1,0 +1,47 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/current_weather_model.dart';
+import '../models/forecast_day_model.dart';
+import '../models/history_weather_model.dart';
+import '../services/weather_api_services.dart';
+
+//
+// final weatherServiceProvider = Provider<WeatherApiServices>((ref) {
+//   return WeatherApiServices();
+// });
+//
+// // Current Weather Provider
+// final currentWeatherProvider = FutureProvider.family<CurrentWeatherModel, String>((ref, location) async {
+//   final service = ref.read(weatherServiceProvider);
+//   final data = await service.getHourlyForecast(location);
+//   return CurrentWeatherModel.fromJson(data);
+// });
+//
+// // Next 7 Days Forecast Provider
+// final next7DaysProvider = FutureProvider.family<ForecastDayModel, String>((ref, location) async {
+//   final service = ref.read(weatherServiceProvider);
+//   final data = await service.getHourlyForecast(location);
+//   return ForecastDayModel.fromJson(data);
+// });
+//
+// // Past 7 Days History Provider
+// final past7DaysProvider = FutureProvider.family<List<HistoryWeatherModel>, String>((ref, location) async {
+//   final service = ref.read(weatherServiceProvider);
+//   final dataList = await service.getLast7DaysForecast(location);
+//   return dataList.map((e) => HistoryWeatherModel.fromJson(e)).toList();
+// });
+
+  final weatherServiceProvider = Provider<WeatherApiServices>((ref) {
+    return WeatherApiServices();
+  });
+
+  final currentWeatherProvider = FutureProvider.family<CurrentWeatherModel, String>((ref, location) async {//use family to pass the location as a parameter(don't need family if you don't pass any parameter)
+    final service = ref.read(weatherServiceProvider);
+    final data = await service.getHourlyForecast(location);
+    return CurrentWeatherModel.fromJson(data);
+  });
+
+  final next7DaysProvider = FutureProvider.family<ForecastDayModel, String>((ref, location,) async {
+    final service = ref.read(weatherServiceProvider);
+    final data = await service.getHourlyForecast(location);
+    return ForecastDayModel.fromJson(data);
+  });
