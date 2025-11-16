@@ -14,6 +14,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final String city = "Dhaka";
+
   @override
   Widget build(BuildContext context) {
     ScreenSize.of(context);
@@ -22,61 +23,79 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final notifier = ref.read(themeNotifierProvider.notifier);
     final isDark = themeMode == ThemeMode.dark;
     // 🟩 IMPORTANT: Call your weather providers here
+
     final currentWeather = ref.watch(currentWeatherProvider(city));
     final forecast = ref.watch(next7DaysProvider(city));
     final history = ref.watch(past7daysProvider(city));
+    final locationData = ref.watch(locationProvider(city));
 
     return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(ScreenSize.screenHeight * 0.12),
-        child: Padding(
-          padding: EdgeInsets.only(top: ScreenSize.screenHeight * 0.02),
-          child: AppBar(
-            backgroundColor: Theme.of(context).primaryColor,
-            actions: [
-              SizedBox(width: 25),
-              SizedBox(
-                height: 50,
-                width: 300,
-                child: TextField(
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
-                    labelText: "search city",
-                    labelStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.surface,
+        backgroundColor: Theme
+            .of(context)
+            .primaryColor,
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(ScreenSize.screenHeight * 0.12),
+          child: Padding(
+            padding: EdgeInsets.only(top: ScreenSize.screenHeight * 0.02),
+            child: AppBar(
+              backgroundColor: Theme
+                  .of(context)
+                  .primaryColor,
+              actions: [
+                SizedBox(width: 25),
+                SizedBox(
+                  height: 50,
+                  width: 300,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: Theme
+                            .of(context)
+                            .colorScheme
+                            .surface,
                       ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.surface,
+                      labelText: "search city",
+                      labelStyle: TextStyle(
+                        color: Theme
+                            .of(context)
+                            .colorScheme
+                            .surface,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                          color: Theme
+                              .of(context)
+                              .colorScheme
+                              .surface,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                          color: Theme
+                              .of(context)
+                              .colorScheme
+                              .surface,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Spacer(),
-              GestureDetector(
-                onTap: notifier.toggleTheme,
-                child: Icon(
-                  isDark ? Icons.dark_mode : Icons.light_mode,
-                  color: isDark ? Colors.black : Colors.white,
+                Spacer(),
+                GestureDetector(
+                  onTap: notifier.toggleTheme,
+                  child: Icon(
+                    isDark ? Icons.dark_mode : Icons.light_mode,
+                    color: isDark ? Colors.black : Colors.white,
+                  ),
                 ),
-              ),
-              SizedBox(width: 25),
-            ],
+                SizedBox(width: 25),
+              ],
+            ),
           ),
         ),
-      ),
 
         body: ListView(
           padding: const EdgeInsets.all(16),
@@ -93,11 +112,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text(
-                "Current Weather Error: $e",
-                style: const TextStyle(color: Colors.white),
-              ),
+              error: (e, _) =>
+                  Text(
+                    "Current Weather Error: $e",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
             ),
+            locationData.when(
+                data: (data){
+                  return Text(
+                    "Country :${data.location?.country??'N/a'}",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) =>
+                  Text(
+                    "Current Weather Error: $e",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+            ),
+
 
             const SizedBox(height: 20),
 
@@ -114,10 +155,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text(
-                "Forecast Error: $e",
-                style: const TextStyle(color: Colors.white),
-              ),
+              error: (e, _) =>
+                  Text(
+                    "Forecast Error: $e",
+                    style: const TextStyle(color: Colors.white),
+                  ),
             ),
 
             const SizedBox(height: 20),
@@ -134,10 +176,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text(
-                "History Error: $e",
-                style: const TextStyle(color: Colors.white),
-              ),
+              error: (e, _) =>
+                  Text(
+                    "History Error: $e",
+                    style: const TextStyle(color: Colors.white),
+                  ),
             ),
           ],
         )
