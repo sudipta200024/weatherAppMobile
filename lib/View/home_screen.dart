@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:weathermobileapp/Provider/theme_provider.dart';
 import 'package:weathermobileapp/Utils/screen_size.dart';
 
+import '../Provider/search_provider.dart';
 import '../Provider/weather_api_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -13,11 +14,48 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final String city = "Dhaka";
+
+  final TextEditingController _searchController = TextEditingController();
+
+
+  @override
+  void initState() {
+    super.initState();
+    // Set initial city AFTER first build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final initialCity = ref.read(searchProvider);
+      _searchController.text = initialCity;
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _performSearch() {
+    final city = _searchController.text.trim();
+    if (city.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a city name")),
+      );
+      return;
+    }
+    ref.read(searchProvider.notifier).updateCity(city);
+  }
 
   @override
   Widget build(BuildContext context) {
     ScreenSize.of(context);
+    final city = ref.watch(searchProvider);
+
+    ref.listen(searchProvider, (previous, next) {
+      if (next != _searchController.text) {
+        _searchController.text = next;
+      }
+    });
+
 
     final themeMode = ref.watch(themeNotifierProvider);
     final notifier = ref.read(themeNotifierProvider.notifier);
@@ -47,6 +85,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   height: 50,
                   width: 300,
                   child: TextField(
+                    onSubmitted: (_) => _performSearch(),
+                    controller: _searchController,
                     decoration: InputDecoration(
                       prefixIcon: Icon(
                         Icons.search,
@@ -124,7 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             locationData.when(
                 data: (data){
                   return Text(
-                    "Country :${data.location?.country??'N/a'}",
+                    "Country :${data.location.country}",
                     style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white,
@@ -183,7 +223,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
             ),
           ],
-        )
+        ),
 
     );
   }
