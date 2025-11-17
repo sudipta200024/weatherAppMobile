@@ -21,7 +21,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Set initial city AFTER first build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final initialCity = ref.read(searchProvider);
       _searchController.text = initialCity;
@@ -60,7 +59,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final themeMode = ref.watch(themeNotifierProvider);
     final notifier = ref.read(themeNotifierProvider.notifier);
     final isDark = themeMode == ThemeMode.dark;
-    // 🟩 IMPORTANT: Call your weather providers here
 
     final currentWeather = ref.watch(currentWeatherProvider(city));
     final forecast = ref.watch(next7DaysProvider(city));
@@ -87,6 +85,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: TextField(
                     onSubmitted: (_) => _performSearch(),
                     controller: _searchController,
+                    style: TextStyle(
+                      color: Theme
+                          .of(context)
+                          .colorScheme
+                          .surface,
+                    ),
                     decoration: InputDecoration(
                       prefixIcon: Icon(
                         Icons.search,
@@ -102,6 +106,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             .colorScheme
                             .surface,
                       ),
+
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide(
@@ -119,6 +125,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               .colorScheme
                               .surface,
                         ),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.send),
+                        onPressed: _performSearch,
+                        color: Theme.of(context).colorScheme.surface,
                       ),
                     ),
                   ),
