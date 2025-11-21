@@ -18,14 +18,12 @@ class LocationNotifier extends AsyncNotifier<String> {
       return currentCity;
     }
 
-    // First launch + no saved city → auto-detect!
-    await detectCurrentLocation();
     return ref.read(searchProvider).isNotEmpty
         ? ref.read(searchProvider)
         : "Earth"; // fallback
   }
 
-// In location_notifier.dart → replace the whole method
+  // In location_notifier.dart → replace the whole method
   Future<void> detectCurrentLocation() async {
     state = const AsyncLoading();
 
@@ -67,7 +65,8 @@ class LocationNotifier extends AsyncNotifier<String> {
         position.longitude,
       );
 
-      final city = placemarks.first.locality ??
+      final city =
+          placemarks.first.locality ??
           placemarks.first.subAdministrativeArea ??
           placemarks.first.administrativeArea ??
           "Unknown City";
