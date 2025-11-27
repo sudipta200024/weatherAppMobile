@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:weathermobileapp/Provider/theme_provider.dart';
 import 'package:weathermobileapp/Utils/screen_size.dart';
+import 'package:weathermobileapp/common/widgets/first_launcher_widget.dart';
 
 import '../Provider/search_provider.dart';
 import '../Provider/weather_api_provider.dart';
 import '../Provider/location_notifier.dart';
+import '../common/widgets/glass_card_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -137,38 +139,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ),
         child: SafeArea(
           child: city.isEmpty
-              ? _firstLaunch(cs)
+              ? first_launcher_widget(pulseController: _pulseController, cs: cs)
               : _weatherScreen(city, cs, textTheme),
         ),
       ),
     );
   }
 
-  Widget _firstLaunch(ColorScheme cs) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          RotationTransition(
-            turns: _pulseController,
-            child: Icon(
-              Icons.location_searching,
-              size: 80,
-              color: cs.primary.withOpacity(0.6),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            "Finding your location...",
-            style: TextStyle(
-              fontSize: 20,
-              color: cs.onBackground.withOpacity(0.8),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _weatherScreen(String city, ColorScheme cs, TextTheme textTheme) {
     final weather = ref.watch(currentWeatherProvider(city));
@@ -177,9 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     return RefreshIndicator(
       onRefresh: () async {
-        ref
-            .read(currentLocationProvider.notifier)
-            .detectCurrentLocation();
+        ref.read(currentLocationProvider.notifier).detectCurrentLocation();
         await Future.delayed(const Duration(milliseconds: 800));
       },
       color: cs.secondary,
@@ -190,11 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           SliverFillRemaining(
             hasScrollBody: false,
             child: Padding(
-              padding: const EdgeInsets.only(
-                top: 16,
-                left: 24,
-                right: 24,
-                bottom: 40,
+              padding: const EdgeInsets.only(top: 16, left: 24, right: 24, bottom: 40,
               ),
               child: Column(
                 children: [
@@ -251,9 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         const SizedBox(height: 12),
 
                         // Details card (humidity, wind, feels-like)
-                        _glassCard(
-                          cs: cs,
-                          child: Padding(
+                        GlassCard(cs: cs, child: Padding(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 10),
                             child: Row(
@@ -271,14 +240,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                     Colors.orangeAccent),
                               ],
                             ),
-                          ),
-                        ),
+                          )),
                         const SizedBox(height: 28),
 
                         // Hourly forecast card
-                        _glassCard(
-                          cs: cs,
-                          child: Padding(
+                        GlassCard(cs: cs, child: Padding(
                             padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,8 +353,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 ),
                               ],
                             ),
-                          ),
-                        ),
+                          )),
                       ],
                     ),
                     loading: () =>
@@ -406,25 +371,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _glassCard(
-      {required ColorScheme cs, required Widget child}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: cs.surface.withOpacity(0.7),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: cs.outline.withOpacity(0.2)),
-          ),
-          child: child,
-        ),
       ),
     );
   }
@@ -451,3 +397,5 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 }
+
+
