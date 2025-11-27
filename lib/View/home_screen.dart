@@ -1,7 +1,7 @@
-// home_screen.dart — FINAL BEAUTIFUL VERSION
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:weathermobileapp/Provider/theme_provider.dart';
 import 'package:weathermobileapp/Utils/screen_size.dart';
 
@@ -19,7 +19,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-  late AnimationController _pulseController;
+  late final AnimationController _pulseController;
 
   @override
   void initState() {
@@ -45,376 +45,409 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     super.dispose();
   }
 
-  void _performSearch() {
+  void _search() {
     final city = _searchController.text.trim();
-    if (city.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter a city name"),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
+    if (city.isNotEmpty) {
+      ref.read(searchProvider.notifier).updateCity(city);
     }
-    ref.read(searchProvider.notifier).updateCity(city);
   }
 
   @override
   Widget build(BuildContext context) {
-    ScreenSize.of(context);
+    ScreenSize.of(context); // initialise screen size helper
+
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final city = ref.watch(searchProvider);
-    final gpsState = ref.watch(currentLocationProvider);
-    final themeMode = ref.watch(themeNotifierProvider);
-    final isDark = themeMode == ThemeMode.dark;
-
-    final currentWeather =
-        city.isNotEmpty ? ref.watch(currentWeatherProvider(city)) : null;
-    final forecast =
-        city.isNotEmpty ? ref.watch(next7DaysProvider(city)) : null;
-    final locationData =
-        city.isNotEmpty ? ref.watch(locationProvider(city)) : null;
-
-    ref.listen<String>(searchProvider, (prev, next) {
-      if (next.trim() != _searchController.text.trim()) {
-        _searchController.text = next;
-        _searchController.selection = TextSelection.fromPosition(
-          TextPosition(offset: _searchController.text.length),
-        );
-      }
-    });
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: false,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(isDark ? 0.15 : 0.25),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+            child: ClipRRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                child: Container(
+                  color: Colors.transparent,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 5,
                     ),
-                    child: TextField(
-                      controller: _searchController,
-                      onSubmitted: (_) => _performSearch(),
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      decoration: InputDecoration(
-                        hintText: "Search city...",
-                        hintStyle: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            onSubmitted: (_) => _search(),
+                            style: TextStyle(color: cs.primary),
+                            decoration: const InputDecoration(
+                              hintText: "Search city...",
+                              prefixIcon: Icon(Icons.search),
+                              border: InputBorder.none,
+                            ),
+                          ),
                         ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Colors.white70,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.send, color: Colors.white),
-                          onPressed: _performSearch,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 15),
-                GestureDetector(
-                  onTap:
-                      () =>
-                          ref
+                        const SizedBox(width: 12),
+                        IconButton(
+                          icon: Icon(
+                            isDark ? Icons.dark_mode : Icons.light_mode,
+                            size: 28,
+                          ),
+                          color: cs.onBackground,
+                          onPressed: () => ref
                               .read(themeNotifierProvider.notifier)
                               .toggleTheme(),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: Icon(
-                      isDark ? Icons.dark_mode : Icons.light_mode,
-                      key: ValueKey(isDark),
-                      color: Colors.white,
-                      size: 32,
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
-
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors:
-                isDark
-                    ? [const Color(0xFF0A2540), const Color(0xFF1C2B3A)]
-                    : [const Color(0xFF74B9FF), const Color(0xFFE9F4FF)],
+            colors: Theme.of(context).brightness == Brightness.light
+                ? const [
+              Color(0xFF87CEEB), // Sky blue
+              Color(0xFFB3E5FC),
+              Color(0xFFE1F5FE),
+            ]
+                : const [
+              Color(0xFF0F1424), // Deep midnight
+              Color(0xFF1E1B4B),
+              Color(0xFF2D1B69), // Aurora purple
+            ],
           ),
         ),
-        child: Stack(
-          children: [
-            // MAIN WEATHER CONTENT
-            if (city.isNotEmpty)
-              RefreshIndicator(
-                onRefresh:
-                    () async =>
-                        ref
-                            .read(currentLocationProvider.notifier)
-                            .detectCurrentLocation(),
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 120, 20, 100),
-                  children: [
-                    // City Name & Country
-                    locationData?.when(
-                          data:
-                              (data) => Column(
-                                children: [
-                                  Text(
-                                    data.location.name ?? city,
-                                    style: const TextStyle(
-                                      fontSize: 42,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  Text(
-                                    data.location.country ?? "",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white.withOpacity(0.8),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                          loading: () => const SizedBox(),
-                          error: (_, __) => const SizedBox(),
-                        ) ??
-                        Text(
-                          city,
-                          style: const TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+        child: SafeArea(
+          child: city.isEmpty
+              ? _firstLaunch(cs)
+              : _weatherScreen(city, cs, textTheme),
+        ),
+      ),
+    );
+  }
 
-                    const SizedBox(height: 30),
+  Widget _firstLaunch(ColorScheme cs) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          RotationTransition(
+            turns: _pulseController,
+            child: Icon(
+              Icons.location_searching,
+              size: 80,
+              color: cs.primary.withOpacity(0.6),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "Finding your location...",
+            style: TextStyle(
+              fontSize: 20,
+              color: cs.onBackground.withOpacity(0.8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                    // Current Temperature (Big & Beautiful)
-                    currentWeather!.when(
-                      data:
-                          (data) => Column(
-                            children: [
-                              Text(
-                                "${data.current?.tempC?.toStringAsFixed(0) ?? '--'}°",
-                                style: const TextStyle(
-                                  fontSize: 100,
-                                  fontWeight: FontWeight.w300,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Text(
-                                data.current?.condition?.text ?? "Loading...",
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  color: Colors.white.withOpacity(0.9),
-                                ),
-                              ),
-                            ],
-                          ),
-                      loading:
-                          () => const SizedBox(
-                            height: 200,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                      error:
-                          (e, _) => Text(
-                            "Weather unavailable",
-                            style: TextStyle(
-                              color: Colors.red.shade300,
-                              fontSize: 18,
-                            ),
-                          ),
-                    ),
+  Widget _weatherScreen(String city, ColorScheme cs, TextTheme textTheme) {
+    final weather = ref.watch(currentWeatherProvider(city));
+    final forecast = ref.watch(next7DaysProvider(city));
+    final location = ref.watch(locationProvider(city));
 
-                    const SizedBox(height: 50),
-
-                    // Forecast Card
-                    Card(
-                      color: Colors.white.withOpacity(0.15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: forecast!.when(
-                          data:
-                              (data) => Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "7-Day Forecast",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    "${data.forecast?.forecastday?.length ?? 0} days available",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white.withOpacity(0.9),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                          loading:
-                              () => const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              ),
-                          error:
-                              (e, _) => Text(
-                                "Forecast unavailable",
-                                style: TextStyle(color: Colors.orange.shade300),
-                              ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              )
-            else
-              // First Launch Screen
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    RotationTransition(
-                      turns: _pulseController,
-                      child: const Icon(
-                        Icons.location_searching,
-                        size: 100,
-                        color: Colors.white54,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    const Text(
-                      "Finding your location...",
-                      style: TextStyle(
-                        fontSize: 22,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref
+            .read(currentLocationProvider.notifier)
+            .detectCurrentLocation();
+        await Future.delayed(const Duration(milliseconds: 800));
+      },
+      color: cs.secondary,
+      backgroundColor: cs.surface.withOpacity(0.2),
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                top: 16,
+                left: 24,
+                right: 24,
+                bottom: 40,
               ),
+              child: Column(
+                children: [
+                  // City name & country
+                  Text(
+                    location.value?.location.name ?? city,
+                    style: textTheme.titleLarge
+                        ?.copyWith(color: cs.onBackground),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    location.value?.location.country ?? "",
+                    style: TextStyle(fontSize: 16, color: cs.onSurface),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
 
-            // GPS Loading / Error Overlay
-            if (gpsState.isLoading || gpsState.hasError)
-              Container(
-                color: Colors.black.withOpacity(0.9),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (gpsState.isLoading)
-                        const Column(
-                          children: [
-                            CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 6,
-                            ),
-                            SizedBox(height: 30),
-                            Text(
-                              "Detecting your location...",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        )
-                      else ...[
-                        const Icon(
-                          Icons.location_off,
-                          size: 80,
-                          color: Colors.red,
-                        ),
-                        const SizedBox(height: 20),
+                  // Current weather
+                  weather.when(
+                    data: (data) => Column(
+                      children: [
                         Text(
-                          "Location Error:\n${gpsState.error}",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
+                          "${data.current!.tempC!.toInt()}°C",
+                          style: TextStyle(
+                            fontSize: 50,
+                            fontWeight: FontWeight.w500,
+                            color: cs.onBackground,
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 20),
-                        ElevatedButton.icon(
-                          onPressed: () => Geolocator.openAppSettings(),
-                          icon: const Icon(Icons.settings),
-                          label: const Text("Open Settings"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                        const SizedBox(height: 2),
+                        Text(
+                          data.current!.condition!.text!,
+                          style:
+                          TextStyle(fontSize: 20, color: cs.onSurface),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Weather icon
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(40),
+                          child: Image.network(
+                            "https:${data.current!.condition!.icon!}",
+                            width: 150,
+                            height: 150,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.cloud,
+                              size: 120,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Details card (humidity, wind, feels-like)
+                        _glassCard(
+                          cs: cs,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            child: Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _detail(Icons.water_drop,
+                                    "${data.current!.humidity}%", "Humidity", cs.primary),
+                                _detail(Icons.air,
+                                    "${data.current!.windKph!.toInt()} km/h", "Wind", cs.secondary),
+                                _detail(
+                                    Icons.thermostat,
+                                    "${data.current!.feelslikeC!.toInt()}°",
+                                    "Feels",
+                                    Colors.orangeAccent),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+
+                        // Hourly forecast card
+                        _glassCard(
+                          cs: cs,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Today",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: cs.onBackground,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                forecast.when(
+                                  data: (f) {
+                                    final now = DateTime.now();
+                                    final todayHours =
+                                    f.forecast!.forecastday![0].hour!;
+                                    final tomorrowHours =
+                                    f.forecast!.forecastday![1].hour!;
+
+                                    // Find first hour >= now
+                                    int currentIndex = todayHours.indexWhere((h) =>
+                                    DateTime.parse(h.time!).hour >= now.hour);
+                                    if (currentIndex == -1) {
+                                      currentIndex = todayHours.length;
+                                    }
+
+                                    var hourlyList = todayHours
+                                        .skip(currentIndex)
+                                        .toList();
+
+                                    if (hourlyList.length < 5) {
+                                      final needed = 5 - hourlyList.length;
+                                      hourlyList.addAll(
+                                          tomorrowHours.take(needed));
+                                    }
+
+                                    final next5 = hourlyList.take(5).toList();
+
+                                    return Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                      children: next5.map((h) {
+                                        final time = DateTime.parse(h.time!);
+                                        final label = time.hour == 0
+                                            ? "12A"
+                                            : time.hour == 12
+                                            ? "12P"
+                                            : time.hour < 12
+                                            ? "${time.hour}A"
+                                            : "${time.hour - 12}P";
+
+                                        final isCurrentHour = time.hour ==
+                                            now.hour &&
+                                            time.day == now.day;
+
+                                        return Column(
+                                          children: [
+                                            Text(
+                                              label,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color: isCurrentHour
+                                                    ? cs.secondary
+                                                    : cs.onSurface,
+                                                fontWeight: isCurrentHour
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Image.network(
+                                              "https:${h.condition!.icon!}",
+                                              width: 42,
+                                              height: 42,
+                                              errorBuilder: (_, __, ___) =>
+                                                  Icon(Icons.cloud,
+                                                      size: 36,
+                                                      color: cs.onSurface),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              "${h.tempC!.toInt()}°",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: isCurrentHour
+                                                    ? cs.secondary
+                                                    : cs.onBackground,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }).toList(),
+                                    );
+                                  },
+                                  loading: () => const SizedBox(
+                                    height: 100,
+                                    child: Center(
+                                        child: CircularProgressIndicator()),
+                                  ),
+                                  error: (_, __) => Text("—",
+                                      style:
+                                      TextStyle(color: cs.onSurface)),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
-                    ],
+                    ),
+                    loading: () =>
+                    const Center(child: CircularProgressIndicator()),
+                    error: (_, __) => Center(
+                      child: Text(
+                        "No connection",
+                        style: TextStyle(color: cs.error, fontSize: 18),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // // Floating Location Button
-            // Positioned(
-            //   bottom: 30,
-            //   right: 20,
-            //   child: FloatingActionButton.extended(
-            //     backgroundColor: Colors.white,
-            //     foregroundColor: const Color(0xFF0A2540),
-            //     elevation: 12,
-            //     onPressed:
-            //         () =>
-            //             ref
-            //                 .read(currentLocationProvider.notifier)
-            //                 .detectCurrentLocation(),
-            //     icon:
-            //         gpsState.isLoading
-            //             ? const SizedBox(
-            //               width: 20,
-            //               height: 20,
-            //               child: CircularProgressIndicator(strokeWidth: 3),
-            //             )
-            //             : const Icon(Icons.my_location),
-            //     label:
-            //         gpsState.isLoading
-            //             ? const Text("Finding...")
-            //             : const Text("My Location"),
-            //   ),
-            // ),
-          ],
+  Widget _glassCard(
+      {required ColorScheme cs, required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: cs.surface.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: cs.outline.withOpacity(0.2)),
+          ),
+          child: child,
         ),
       ),
+    );
+  }
+
+  Widget _detail(IconData icon, String value, String label, Color color) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 30),
+        const SizedBox(height: 12),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.bold,
+            color: cs.onSurface,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(fontSize: 14, color: cs.onSurface),
+        ),
+      ],
     );
   }
 }
