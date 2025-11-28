@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 final lightTheme = ThemeData(
@@ -7,7 +6,7 @@ final lightTheme = ThemeData(
   primaryColor: const Color(0xFF4A7BFF),
   scaffoldBackgroundColor: Colors.transparent,
 
-  colorScheme:  ColorScheme.light(
+  colorScheme: ColorScheme.light(
     primary: Color(0xFF4A7BFF),
     secondary: Color(0xFF6B9AFF),
     background: Color(0x99E3F2FD),
@@ -58,7 +57,7 @@ final lightTheme = ThemeData(
     ),
   ),
 
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: Colors.white.withOpacity(0.92),
     elevation: 0,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
@@ -121,7 +120,7 @@ final darkTheme = ThemeData(
     ),
   ),
 
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: Colors.white.withOpacity(0.10),
     elevation: 0,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
