@@ -31,7 +31,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       duration: const Duration(seconds: 2),
     )..repeat();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(searchProvider.notifier).loadCompleted;
       final savedCity = ref.read(searchProvider);
       _searchController.text = savedCity;
       if (savedCity.isEmpty) {

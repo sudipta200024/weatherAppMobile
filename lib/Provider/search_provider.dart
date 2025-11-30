@@ -13,6 +13,8 @@
 //   return SearchNotifier();
 // });
 // providers/search_provider.dart
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,12 +24,13 @@ final searchProvider = NotifierProvider<SearchNotifier, String>(() {
 
 class SearchNotifier extends Notifier<String> {
   static const _key = 'last_city';
-
+  final _loadCompleter = Completer<void>();
+  Future<void> get loadCompleted => _loadCompleter.future;
   @override
   String build() {
-    // First launch: try to load last saved city
+    // try to load last saved city
     _loadFromStorage();
-    return ""; // temporary, will be replaced instantly
+    return ""; // temporary value will be replaced instantly
   }
 
   Future<void> _loadFromStorage() async {
@@ -36,7 +39,10 @@ class SearchNotifier extends Notifier<String> {
     if (saved != null && saved.isNotEmpty) {
       state = saved;
     }
+    _loadCompleter.complete();
   }
+
+
 
   void updateCity(String city) async {
     final trimmed = city.trim();
@@ -44,7 +50,7 @@ class SearchNotifier extends Notifier<String> {
 
     state = trimmed;
 
-    // Save to storage so it survives app restart (pro feature #4)
+    // Save to storage so it survives app restart
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_key, trimmed);
   }
