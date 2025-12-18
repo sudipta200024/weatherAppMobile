@@ -4,6 +4,8 @@ import 'package:weathermobileapp/Provider/weather_api_provider.dart';
 import 'package:weathermobileapp/Provider/location_notifier.dart';
 import 'package:weathermobileapp/common/widgets/glass_card_widget.dart';
 
+import '../../View/weekly_forecast_screen.dart';
+
 class WeatherScreen extends ConsumerWidget {
   final String city;
   final ColorScheme cs;
@@ -154,7 +156,11 @@ class WeatherScreen extends ConsumerWidget {
                                           ),
                                           TextButton(
                                             onPressed: () {
-
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (context) => const WeeklyForecastScreen(),
+                                                ),
+                                              );
                                             },
                                             style: TextButton.styleFrom(
                                               minimumSize: Size.zero,
