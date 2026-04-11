@@ -123,7 +123,7 @@ Add to `android/app/src/main/AndroidManifest.xml`:
 
 ## 🎬 Demo
 
-[📹 Watch Demo Video]([add-your-video-link-here](https://www.linkedin.com/posts/sudipta-das2025_flutter-riverpod-flutterdev-ugcPost-7422197095195074560-M9Te))
+[📹 Watch Demo Video]([https://www.linkedin.com/posts/sudipta-das2025_flutter-riverpod-flutterdev-ugcPost-7422197095195074560-M9Te])
 
 ---
 
